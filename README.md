@@ -29,3 +29,17 @@
 - `main.py` - Python 분석 및 시각화 코드
 - `analysis_queries.sql` - MySQL 분석 쿼리
 - `netflix_dashboard.png` - 시각화 결과
+
+## 📈 동향 분석
+
+![Netflix Trend](netflix_trend.png)
+
+### 장르 트렌드 (2015~)
+- International Movies가 꾸준히 1위 유지
+- 2019년 이후 전체적으로 감소 추세
+- Dramas, Comedies 장르가 꾸준히 인기
+
+### 콘텐츠 증가 추세 예측 (2022~2025)
+- 2019년 정점 이후 콘텐츠 추가 감소
+- 넷플릭스가 양보다 질 전략으로 전환한 것으로 분석
+- 2025년까지 감소 추세 지속 예측
