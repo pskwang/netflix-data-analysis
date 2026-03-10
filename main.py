@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 from sqlalchemy import create_engine
+from sklearn.linear_model import LinearRegression
 
 # MySQL 연결
 engine = create_engine(
@@ -26,6 +28,10 @@ plt.rcParams['grid.color']         = '#333333'
 RED  = '#E50914'
 RED2 = '#B81D24'
 GRAY = '#AAAAAA'
+
+# ============================================================
+# 기존 대시보드 (6개 그래프)
+# ============================================================
 
 fig, axes = plt.subplots(2, 3, figsize=(22, 12))
 fig.suptitle('NETFLIX 데이터 분석 대시보드',
@@ -117,3 +123,74 @@ ax6.set_facecolor('#141414')
 plt.tight_layout()
 plt.savefig('netflix_dashboard.png', dpi=150, bbox_inches='tight', facecolor='#141414')
 plt.show()
+print("✅ 기본 대시보드 완성!")
+
+# ============================================================
+# 동향 분석 (장르 트렌드 + 콘텐츠 예측)
+# ============================================================
+
+fig2, axes2 = plt.subplots(1, 2, figsize=(18, 6))
+fig2.patch.set_facecolor('#141414')
+fig2.suptitle('NETFLIX 동향 분석', fontsize=18, fontweight='bold', color=RED)
+
+# (1) 장르 트렌드
+ax1 = axes2[0]
+df_genre = df[['year_added', 'listed_in']].dropna()
+df_genre['listed_in'] = df_genre['listed_in'].str.split(',')
+df_genre = df_genre.explode('listed_in')
+df_genre['listed_in'] = df_genre['listed_in'].str.strip()
+df_genre = df_genre[df_genre['year_added'] >= 2015]
+
+top5_genres = df_genre['listed_in'].value_counts().head(5).index.tolist()
+df_genre_top5 = df_genre[df_genre['listed_in'].isin(top5_genres)]
+genre_trend = df_genre_top5.groupby(['year_added', 'listed_in']).size().unstack(fill_value=0)
+
+colors_genre = [RED, '#FF6B6B', '#FF4500', '#B81D24', '#888888']
+for i, genre in enumerate(genre_trend.columns):
+    ax1.plot(genre_trend.index.astype(int), genre_trend[genre],
+             marker='o', linewidth=2.5, label=genre, color=colors_genre[i])
+ax1.set_facecolor('#141414')
+ax1.set_title('연도별 장르 트렌드 (2015~)', color='white', fontsize=13, fontweight='bold')
+ax1.set_xlabel('연도', color=GRAY)
+ax1.set_ylabel('콘텐츠 수', color=GRAY)
+ax1.legend(fontsize=8, facecolor='#222222', labelcolor='white')
+ax1.grid(alpha=0.3)
+ax1.tick_params(colors=GRAY)
+
+# (2) 콘텐츠 증가 추세 예측
+ax2 = axes2[1]
+yearly_total = df.groupby('year_added').size().reset_index(name='count')
+yearly_total = yearly_total.dropna().astype(int)
+yearly_total = yearly_total[yearly_total['year_added'] >= 2018]
+
+X = yearly_total['year_added'].values.reshape(-1, 1)
+y = yearly_total['count'].values
+
+model = LinearRegression()
+model.fit(X, y)
+
+# 2022~2025 예측
+future_years = np.array([[2022], [2023], [2024], [2025]])
+predicted = model.predict(future_years).astype(int)
+
+ax2.set_facecolor('#141414')
+ax2.bar(yearly_total['year_added'], yearly_total['count'],
+        color=RED, edgecolor='#141414', label='실제 데이터')
+ax2.bar([y[0] for y in future_years], predicted,
+        color='#555555', edgecolor='#141414', label='예측값', alpha=0.8)
+
+all_years = np.array(list(yearly_total['year_added']) + [y[0] for y in future_years])
+trend_line = model.predict(all_years.reshape(-1, 1))
+ax2.plot(all_years, trend_line, color='white', linewidth=2, linestyle='--', label='추세선')
+
+ax2.set_title('콘텐츠 증가 추세 예측 (2022~2025)', color='white', fontsize=13, fontweight='bold')
+ax2.set_xlabel('연도', color=GRAY)
+ax2.set_ylabel('콘텐츠 수', color=GRAY)
+ax2.legend(fontsize=9, facecolor='#222222', labelcolor='white')
+ax2.grid(axis='y', alpha=0.3)
+ax2.tick_params(colors=GRAY)
+
+plt.tight_layout()
+plt.savefig('netflix_trend.png', dpi=150, bbox_inches='tight', facecolor='#141414')
+plt.show()
+print("✅ 동향 분석 완료!")
