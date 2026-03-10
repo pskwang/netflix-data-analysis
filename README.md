@@ -12,10 +12,9 @@
 1. Movie vs TV Show 비율
 2. 연도별 콘텐츠 추가 추이
 3. 국가별 콘텐츠 TOP 10
-4. 월별 콘텐츠 추가 패턴
-5. 시청 등급 분포
-6. 장르 TOP 10
-7. 감독별 작품 수 TOP 10
+4. 시청 등급 분포
+5. 장르 TOP 10
+6. 감독별 작품 수 TOP 10
 
 ## 📈 대시보드
 ![Netflix Dashboard](netflix_dashboard.png)
